@@ -21,7 +21,8 @@ export default function TeamMatchmaker({
   teams, 
   setTeams, 
   setAttendees,
-  addToast 
+  addToast,
+  logActivity
 }) {
   const [viewMode, setViewMode] = useState('matchmaker'); // 'matchmaker' | 'create_team' | 'teams_list'
   const [skillFilter, setSkillFilter] = useState('All');
@@ -42,17 +43,8 @@ export default function TeamMatchmaker({
   const calculateMatchScore = (attendee, team) => {
     let score = 70; // baseline
     if (team.track === attendee.track) score += 15;
-    
-    // Check skill overlap with lookingFor
-    const attendeeSkills = attendee.skills.map(s => s.toLowerCase());
-    const lookingForList = team.lookingFor.map(l => l.toLowerCase());
-
-    const hasMatch = lookingForList.some(l => 
-      attendeeSkills.some(s => l.includes(s) || s.includes(l))
-    );
-
-    if (hasMatch) score += 12;
-    return Math.min(99, score);
+    if (team.lookingFor.some(role => attendee.role.toLowerCase().includes(role.toLowerCase()))) score += 15;
+    return Math.min(score, 98);
   };
 
   // Handle Team Creation
@@ -83,6 +75,7 @@ export default function TeamMatchmaker({
     setViewMode('teams_list');
     soundFx.playNotification();
     addToast(`Team "${newTeam.name}" created successfully! Now listed in Matchmaker portal.`, 'success');
+    if (logActivity) logActivity('👥', `New team formed: ${newTeam.name} (${newTeam.track})`);
   };
 
   // Send Join Request
@@ -90,6 +83,8 @@ export default function TeamMatchmaker({
     setRequestSent(prev => ({ ...prev, [teamId]: true }));
     soundFx.playNotification();
     addToast(`Join Request sent to team leaders! They will review your skill profile.`, 'success');
+    const team = teams.find(t => t.id === teamId);
+    if (logActivity && team) logActivity('📩', `Join request sent to ${team.name}`);
   };
 
   // Filtered Attendees (Free Agents looking for teams)

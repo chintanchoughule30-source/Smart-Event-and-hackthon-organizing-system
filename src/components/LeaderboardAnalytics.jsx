@@ -14,7 +14,8 @@ import {
   GitBranch,
   Globe,
   PieChart as PieIcon,
-  Sparkles
+  Sparkles,
+  Download
 } from 'lucide-react';
 import { 
   AreaChart, 
@@ -64,6 +65,30 @@ export default function LeaderboardAnalytics({
 
   const COLORS = ['#06b6d4', '#8b5cf6', '#10b981', '#f59e0b', '#ec4899'];
 
+  const handleExportCSV = () => {
+    const headers = ['Rank', 'Team Name', 'Track', 'Score', 'Table', 'Repo URL', 'Demo URL', 'Judged Status'];
+    const rows = sortedTeams.map((t, idx) => [
+      idx + 1,
+      `"${t.name.replace(/"/g, '""')}"`,
+      `"${t.track.replace(/"/g, '""')}"`,
+      t.totalScore,
+      `"${t.tableNumber}"`,
+      `"${t.repoUrl}"`,
+      `"${t.demoUrl}"`,
+      t.judged ? 'Judged' : 'Pending'
+    ]);
+
+    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `nexus_hackathon_leaderboard_${Date.now()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-8">
       {/* Sub Header & Switcher */}
@@ -78,27 +103,38 @@ export default function LeaderboardAnalytics({
           </p>
         </div>
 
-        {/* View Selector */}
-        <div className="flex bg-slate-900 p-1 rounded-xl border border-slate-800">
+        {/* View Selector & Export */}
+        <div className="flex flex-wrap items-center gap-2">
           <button
-            onClick={() => setActiveTab('leaderboard')}
-            className={`flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition ${
-              activeTab === 'leaderboard' ? 'bg-yellow-500 text-slate-950 shadow-md font-bold' : 'text-slate-400 hover:text-white'
-            }`}
+            onClick={handleExportCSV}
+            className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-400 border border-cyan-500/30 text-xs font-semibold transition cursor-pointer"
+            title="Export Leaderboard as CSV"
           >
-            <Trophy className="w-3.5 h-3.5" />
-            <span>Live Podium Leaderboard</span>
+            <Download className="w-3.5 h-3.5" />
+            <span>Export CSV</span>
           </button>
 
-          <button
-            onClick={() => setActiveTab('analytics')}
-            className={`flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition ${
-              activeTab === 'analytics' ? 'bg-cyan-500 text-slate-950 shadow-md font-bold' : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            <BarChart3 className="w-3.5 h-3.5" />
-            <span>Organizer Command Analytics</span>
-          </button>
+          <div className="flex bg-slate-900 p-1 rounded-xl border border-slate-800">
+            <button
+              onClick={() => setActiveTab('leaderboard')}
+              className={`flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition ${
+                activeTab === 'leaderboard' ? 'bg-yellow-500 text-slate-950 shadow-md font-bold' : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <Trophy className="w-3.5 h-3.5" />
+              <span>Live Podium Leaderboard</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('analytics')}
+              className={`flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition ${
+                activeTab === 'analytics' ? 'bg-cyan-500 text-slate-950 shadow-md font-bold' : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <BarChart3 className="w-3.5 h-3.5" />
+              <span>Organizer Command Analytics</span>
+            </button>
+          </div>
         </div>
       </div>
 

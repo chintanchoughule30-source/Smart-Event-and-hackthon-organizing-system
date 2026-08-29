@@ -18,7 +18,8 @@ export default function BroadcastCenter({
   announcements, 
   setAnnouncements, 
   currentRole, 
-  addToast 
+  addToast,
+  logActivity
 }) {
   const [filter, setFilter] = useState('All');
 
@@ -48,6 +49,7 @@ export default function BroadcastCenter({
     setAnnouncements([broadcastObj, ...announcements]);
     soundFx.playNotification();
     addToast(`📢 BROADCAST DISPATCHED: "${newBroadcast.title}"`, 'warning');
+    if (logActivity) logActivity('📢', `Broadcast dispatched: ${newBroadcast.title}`);
 
     setNewBroadcast({
       title: '',

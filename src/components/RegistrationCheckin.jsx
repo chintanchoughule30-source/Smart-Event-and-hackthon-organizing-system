@@ -12,7 +12,8 @@ import {
   RefreshCw,
   Zap,
   Clock,
-  UserCheck
+  UserCheck,
+  Download
 } from 'lucide-react';
 import { soundFx } from '../utils/audio';
 
@@ -20,7 +21,8 @@ export default function RegistrationCheckin({
   attendees, 
   setAttendees, 
   currentRole, 
-  addToast 
+  addToast,
+  logActivity
 }) {
   const [activeTab, setActiveTab] = useState('register'); // 'register' | 'badge' | 'scanner'
   const [searchQuery, setSearchQuery] = useState('');
@@ -69,6 +71,7 @@ export default function RegistrationCheckin({
     setRegisteredAttendee(newAttendee);
     setActiveTab('badge');
     addToast(`Registration Successful! QR Code generated for ${formData.name}`, 'success');
+    if (logActivity) logActivity('📝', `New attendee registered: ${formData.name} (${formData.role})`);
   };
 
   // Handle Scan Verification
@@ -96,6 +99,7 @@ export default function RegistrationCheckin({
         });
         soundFx.playCheckinSuccess();
         addToast(`🎉 Check-in verified for ${attendee.name}!`, 'success');
+        if (logActivity) logActivity('✅', `Attendee checked in: ${attendee.name} via QR scan`);
       }
     } else {
       setScanResult({
@@ -105,6 +109,32 @@ export default function RegistrationCheckin({
       });
       addToast('Invalid QR Code Scanned!', 'error');
     }
+  };
+
+  // Export Attendees CSV
+  const handleExportAttendeesCSV = () => {
+    const headers = ['ID', 'Name', 'Email', 'Role', 'Track', 'Skills', 'Checked In', 'Check-In Time', 'Team'];
+    const rows = attendees.map(a => [
+      a.id,
+      `"${a.name.replace(/"/g, '""')}"`,
+      `"${a.email.replace(/"/g, '""')}"`,
+      `"${a.role.replace(/"/g, '""')}"`,
+      `"${a.track.replace(/"/g, '""')}"`,
+      `"${(a.skills || []).join('; ')}"`,
+      a.checkedIn ? 'Yes' : 'No',
+      `"${a.checkInTime || ''}"`,
+      `"${a.teamName || 'None'}"`
+    ]);
+
+    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `nexus_attendees_${Date.now()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   // Toggle Manual Check-In
@@ -462,7 +492,17 @@ export default function RegistrationCheckin({
           <div className="glass-panel p-6 rounded-2xl border border-slate-800 space-y-4">
             <div className="flex items-center justify-between">
               <h4 className="font-bold text-white text-sm">Attendee Directory</h4>
-              <span className="text-xs text-slate-400">{attendees.filter(a => a.checkedIn).length} / {attendees.length} Checked In</span>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={handleExportAttendeesCSV}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-cyan-400 border border-cyan-500/30 text-xs font-semibold transition cursor-pointer"
+                  title="Export Attendees as CSV"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Export CSV</span>
+                </button>
+                <span className="text-xs text-slate-400">{attendees.filter(a => a.checkedIn).length} / {attendees.length} Checked In</span>
+              </div>
             </div>
 
             <div className="relative">

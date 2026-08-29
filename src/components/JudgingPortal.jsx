@@ -21,7 +21,8 @@ export default function JudgingPortal({
   teams, 
   setTeams, 
   currentRole, 
-  addToast 
+  addToast,
+  logActivity 
 }) {
   const [selectedTeamId, setSelectedTeamId] = useState(teams[0]?.id || null);
 
@@ -93,6 +94,7 @@ export default function JudgingPortal({
     }
 
     addToast(`🏆 Scores LOCKED for team "${selectedTeam.name}" (${currentTotalScore}/100)! Leaderboard updated live.`, 'success');
+    if (logActivity) logActivity('⚖️', `Score locked for ${selectedTeam.name}: ${currentTotalScore}/100`);
   };
 
   const judgedCount = teams.filter(t => t.judged).length;
