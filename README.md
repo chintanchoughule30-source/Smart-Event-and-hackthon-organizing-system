@@ -132,6 +132,11 @@ src/
 6. **Leaderboard** — Watch rankings update + view analytics charts + Export CSV.
 7. **Schedule** — View interactive timeline with current "NOW" indicator.
 
+## 🤖 AI & Prompt Engineering (Google Antigravity)
+
+Nexus Event HQ was developed inside **Google Antigravity AI IDE** using agentic prompt engineering workflows.
+👉 View the complete **[Prompt Engineering & AI Architecture Document](./PROMPT_DOCUMENT.md)** for detailed prompt logs across domain modeling, glassmorphic UI generation, Web Audio synthesis, security sanitization, and automated testing.
+
 ---
 
 ## 👤 Built With
