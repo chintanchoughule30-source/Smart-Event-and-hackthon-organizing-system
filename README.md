@@ -71,7 +71,7 @@ Switch instantly between 4 personas using the top navbar:
 
 ---
 
-## ⚙️ Local Development
+## ⚙️ Local Development & Testing
 
 ```bash
 # Install dependencies
@@ -79,9 +79,21 @@ npm install
 
 # Start development server
 npm run dev
+
+# Run automated validation test suite (6/6 tests passing)
+npm test
 ```
 
 Open **http://localhost:5173/** in your browser.
+
+---
+
+## 🧪 Testing & Security Verification
+
+Run `npm test` to execute the zero-dependency automated test runner (`scripts/test.js`). It verifies:
+- 🔒 **Security & Input Sanitization**: XSS string escaping, email validation, safe `https` URL parsing.
+- ⚖️ **Weighted Scoring Formula**: 30% Innovation, 30% Execution, 20% UI/UX, 20% Pitch math validation.
+- 👥 **AI Matchmaker Algorithm**: Track & skill matrix complement scoring logic.
 
 ---
 
