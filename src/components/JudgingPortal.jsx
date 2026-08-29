@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { RUBRICS } from '../data/initialData';
 import { soundFx } from '../utils/audio';
+import { sanitizeString } from '../utils/security';
 
 export default function JudgingPortal({ 
   teams, 
@@ -66,11 +67,16 @@ export default function JudgingPortal({
     e.preventDefault();
     if (!selectedTeam) return;
 
+    const sanitizedScores = {
+      ...scores,
+      comments: sanitizeString(scores.comments)
+    };
+
     const updatedTeams = teams.map(t => {
       if (t.id === selectedTeam.id) {
         return {
           ...t,
-          scores: { ...scores },
+          scores: sanitizedScores,
           totalScore: currentTotalScore,
           judged: true,
           judgedBy: 'Dr. Evelyn Reed (Lead Judge)'

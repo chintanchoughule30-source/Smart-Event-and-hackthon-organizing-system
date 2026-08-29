@@ -13,6 +13,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { soundFx } from '../utils/audio';
+import { sanitizeString } from '../utils/security';
 
 export default function BroadcastCenter({ 
   announcements, 
@@ -33,23 +34,29 @@ export default function BroadcastCenter({
 
   const handleDispatchBroadcast = (e) => {
     e.preventDefault();
-    if (!newBroadcast.title || !newBroadcast.message) return;
+    const cleanTitle = sanitizeString(newBroadcast.title);
+    const cleanMessage = sanitizeString(newBroadcast.message);
+
+    if (!cleanTitle || !cleanMessage) {
+      addToast('Please provide a valid title and message for the broadcast.', 'error');
+      return;
+    }
 
     const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const broadcastObj = {
       id: `ann-${Date.now()}`,
-      title: newBroadcast.title,
-      message: newBroadcast.message,
+      title: cleanTitle,
+      message: cleanMessage,
       timestamp: timeNow,
-      priority: newBroadcast.priority,
-      category: newBroadcast.category,
+      priority: sanitizeString(newBroadcast.priority),
+      category: sanitizeString(newBroadcast.category),
       author: 'Organizer HQ'
     };
 
     setAnnouncements([broadcastObj, ...announcements]);
     soundFx.playNotification();
-    addToast(`📢 BROADCAST DISPATCHED: "${newBroadcast.title}"`, 'warning');
-    if (logActivity) logActivity('📢', `Broadcast dispatched: ${newBroadcast.title}`);
+    addToast(`📢 BROADCAST DISPATCHED: "${cleanTitle}"`, 'warning');
+    if (logActivity) logActivity('📢', `Broadcast dispatched: ${cleanTitle}`);
 
     setNewBroadcast({
       title: '',

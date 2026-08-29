@@ -15,6 +15,7 @@ import {
   Check
 } from 'lucide-react';
 import { soundFx } from '../utils/audio';
+import { sanitizeString } from '../utils/security';
 
 export default function TeamMatchmaker({ 
   attendees, 
@@ -50,21 +51,27 @@ export default function TeamMatchmaker({
   // Handle Team Creation
   const handleCreateTeam = (e) => {
     e.preventDefault();
-    if (!newTeam.name || !newTeam.tagline) return;
+    const cleanName = sanitizeString(newTeam.name);
+    const cleanTagline = sanitizeString(newTeam.tagline);
+
+    if (!cleanName || !cleanTagline) {
+      addToast('Please enter a valid team name and project tagline.', 'error');
+      return;
+    }
 
     const teamId = `TEAM-${Math.floor(100 + Math.random() * 900)}`;
-    const lookingList = newTeam.lookingFor.split(',').map(s => s.trim()).filter(Boolean);
+    const lookingList = newTeam.lookingFor.split(',').map(s => sanitizeString(s.trim())).filter(Boolean);
 
     const createdTeam = {
       id: teamId,
-      name: newTeam.name,
-      tagline: newTeam.tagline,
-      track: newTeam.track,
+      name: cleanName,
+      tagline: cleanTagline,
+      track: sanitizeString(newTeam.track),
       repoUrl: '',
       demoUrl: '',
       members: [],
       lookingFor: lookingList,
-      tableNumber: newTeam.tableNumber,
+      tableNumber: sanitizeString(newTeam.tableNumber),
       scores: { innovation: 0, execution: 0, design: 0, pitch: 0, comments: '' },
       totalScore: 0,
       judged: false,
@@ -74,8 +81,8 @@ export default function TeamMatchmaker({
     setTeams([createdTeam, ...teams]);
     setViewMode('teams_list');
     soundFx.playNotification();
-    addToast(`Team "${newTeam.name}" created successfully! Now listed in Matchmaker portal.`, 'success');
-    if (logActivity) logActivity('👥', `New team formed: ${newTeam.name} (${newTeam.track})`);
+    addToast(`Team "${cleanName}" created successfully! Now listed in Matchmaker portal.`, 'success');
+    if (logActivity) logActivity('👥', `New team formed: ${cleanName} (${createdTeam.track})`);
   };
 
   // Send Join Request

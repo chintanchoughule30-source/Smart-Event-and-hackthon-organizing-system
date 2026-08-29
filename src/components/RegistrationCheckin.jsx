@@ -16,6 +16,7 @@ import {
   Download
 } from 'lucide-react';
 import { soundFx } from '../utils/audio';
+import { sanitizeString, validateEmail } from '../utils/security';
 
 export default function RegistrationCheckin({ 
   attendees, 
@@ -46,20 +47,31 @@ export default function RegistrationCheckin({
   // Handle Registration
   const handleRegister = (e) => {
     e.preventDefault();
-    if (!formData.name || !formData.email) return;
+    const cleanName = sanitizeString(formData.name);
+    const cleanEmail = sanitizeString(formData.email);
+
+    if (!cleanName || !cleanEmail) {
+      addToast('Please enter a valid name and email address.', 'error');
+      return;
+    }
+
+    if (!validateEmail(cleanEmail)) {
+      addToast('Please enter a valid email address (e.g. user@domain.com).', 'error');
+      return;
+    }
 
     const newId = `ATT-${Math.floor(1000 + Math.random() * 9000)}`;
-    const skillList = formData.skills.split(',').map(s => s.trim()).filter(Boolean);
-    const newQr = `NEXUS-${newId}-${formData.name.toUpperCase().replace(/\s+/g, '-')}`;
+    const skillList = formData.skills.split(',').map(s => sanitizeString(s.trim())).filter(Boolean);
+    const newQr = `NEXUS-${newId}-${cleanName.toUpperCase().replace(/\s+/g, '-')}`;
 
     const newAttendee = {
       id: newId,
-      name: formData.name,
-      email: formData.email,
-      role: formData.role,
-      track: formData.track,
+      name: cleanName,
+      email: cleanEmail,
+      role: sanitizeString(formData.role),
+      track: sanitizeString(formData.track),
       skills: skillList,
-      bio: formData.bio,
+      bio: sanitizeString(formData.bio),
       checkedIn: false,
       checkInTime: null,
       teamId: null,
@@ -70,8 +82,8 @@ export default function RegistrationCheckin({
     setAttendees([newAttendee, ...attendees]);
     setRegisteredAttendee(newAttendee);
     setActiveTab('badge');
-    addToast(`Registration Successful! QR Code generated for ${formData.name}`, 'success');
-    if (logActivity) logActivity('📝', `New attendee registered: ${formData.name} (${formData.role})`);
+    addToast(`Registration Successful! QR Code generated for ${cleanName}`, 'success');
+    if (logActivity) logActivity('📝', `New attendee registered: ${cleanName} (${newAttendee.role})`);
   };
 
   // Handle Scan Verification
